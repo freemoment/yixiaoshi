@@ -1,15 +1,17 @@
-Parse.Cloud.beforeDelete("DeleteTest", function(request, response) {
-  query = new Parse.Query("Contribution");
-  query.equalTo("0", request.object.type);
-  console.message("query userId :"+ query.userId);
-  query.count({
-    success: function(count) {
+
+
+// is anyone contribution mode2 :共伞 
+Parse.Cloud.define("InOneUmber", function(request, response) {
+  query = new Parse.Query("UmbrellaContribution");
+  query.equalTo("mode", request.params.mode);
+  query.find({
+    success: function(result) {
      
         response.success();
 
     },
     error: function(error) {
-      response.error("Error " + error.code + " : " + error.message + " when getting photo count.");
+      response.error("Error " + error.code + " : " + error.message + " when query guys InOneUmber.");
     }
   });
 });
