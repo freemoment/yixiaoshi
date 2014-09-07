@@ -65,3 +65,83 @@ Parse.Cloud.define("getMatchUser", function(request, response) {
 
 
 // 发一个请求
+Parse.Cloud.define("requestToSomeone", function(request, response) {
+	//当前用户id
+    var fromUserId = request.params.userId;
+    var toUserId = request.params.toUserId;
+
+	var Relationship = Parse.Object.extend("Relationship");
+	var relationship = new Relationship();
+
+	relationship.set("fromUser",fromUserId);
+	relationship.set("toUser",toUserId);
+	relationship.set("isActive",true);
+	relationship.set("status",1);
+	 relationship.save(null, {
+	  success: function(relationship) {
+	    alert('New Relationship object created with objectId: ' + relationship.id);
+	  },
+	  error: function(relationship, error) {
+	    alert('Failed to create new Relationship object, with error code: ' + error.message);
+	  }
+	});
+});
+
+
+// 取消一个请求
+Parse.Cloud.define("cancelRequest", function(request, response) {
+	//当前用户id
+    var fromUserId = request.params.userId;
+    var toUserId = request.params.toUserId;
+
+	var Relationship = Parse.Object.extend("Relationship");
+	query = new Parse.Query("Relationship");
+
+	query.equalTo("fromUser",fromUserId);
+	query.equalTo("toUser",toUserId);
+	query.equalTo("isActive",true);
+	query.equalTo("status",1);
+	query.find({
+	  success: function(result) {
+				result.destroy({
+			  success: function(result) {
+			    // The object was deleted from the Parse Cloud.
+			    response.success("destroy success");
+			  },
+			  error: function(result, error) {
+			    // The delete failed.
+			    // error is a Parse.Error with an error code and description.
+			    response.error(error);
+			  }
+			});
+	  },
+	  error: function(result, error) {
+	    alert('Failed to find object before destroy, with error code: ' + error.message);
+	  }
+	});
+});
+
+
+
+// 拒绝一个请求
+Parse.Cloud.define("rejectRequest", function(request, response) {
+	//当前用户id
+    var fromUserId = request.params.userId;
+    var toUserId = request.params.toUserId;
+
+	var Relationship = Parse.Object.extend("Relationship");
+	var relationship = new Relationship();
+
+	relationship.set("fromUser",fromUserId);
+	relationship.set("toUser",toUserId);
+	relationship.set("isActive",false);
+	relationship.set("status",2);
+	 relationship.save(null, {
+	  success: function(relationship) {
+	    alert('New rejectRequest object created with objectId: ' + relationship.id);
+	  },
+	  error: function(relationship, error) {
+	    alert('Failed to create new rejectRequest object, with error code: ' + error.message);
+	  }
+	});
+});
