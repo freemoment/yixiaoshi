@@ -148,6 +148,38 @@ Parse.Cloud.define("rejectRequest", function(request, response) {
 
 
 
+
+// agree a request   
+// todo: implement again
+Parse.Cloud.define("agreeRequest", function(request, response) {
+    //当前用户id
+    var fromUserId = request.params.userId;
+    var toUserId = request.params.toUserId;
+
+    // var fromUserId = "testone11";
+    // var toUserId = "testtwo1";
+
+    var Relationship = Parse.Object.extend("Relationship");
+    var relationship = new Relationship();
+
+    relationship.set("fromUser",fromUserId);
+    relationship.set("toUser",toUserId);
+    relationship.set("isActive",true);
+    relationship.set("status",3);
+     relationship.save(null, {
+      success: function(relationship) {
+        response.success("success");
+
+      },
+      error: function(relationship, error) {
+        response.error("Error " + error.code + " : " + error.message + " when save.");
+      }
+    });
+
+});
+
+
+
 // find the ones who have umber  
 // todo: implement again
 Parse.Cloud.define("queryUmberOnes", function(request, response) {
