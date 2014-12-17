@@ -1,43 +1,12 @@
-// find the ones who I sent request 
-// todo: implement again
-AV.Cloud.define("queryMyRequestList", function(request, response) {
-  var User = AV.Object.extend('User');
-  query = new AV.Query(User);
-  query.find({
-    success: function(result) {
-        response.success(result);
-
-    },
-    error: function(error) {
-      response.error("Error " + error.code + " : " + error.message + " when query guys queryUmberOnes.");
-    }
-  });
-})
-
-
-AV.Query.doCloudQuery('select * from User where name = (select name from student )',
- {
-  success: function(result){
-     response.success(result);
-  },
-  error: function(error){
-    //查询失败，查看 error
-    console.dir(error);
-  }
-});
-
-
-////////////////////////////////////////////////////////////////////////////////////
-
 // count of contribution  :取正在共伞的数量  done
-AV.Cloud.define("InOneUmberCount", function(request, response) {
-  var Relationship = AV.Object.extend('Relationship');
-  query = new AV.Query(Relationship);
+Parse.Cloud.define("InOneUmberCount", function(request, response) {
+  var Relationship = Parse.Object.extend('Relationship');
+  query = new Parse.Query(Relationship);
   query.equalTo("isActive", true);
     query.equalTo("status", request.params.status);
   query.count({
     success: function(count) {
-  
+        alert('count: ' + count);
         response.success(count);
 
     },
@@ -52,15 +21,13 @@ AV.Cloud.define("InOneUmberCount", function(request, response) {
 
 
 // 发一个请求  done, 
-// 
-AV.Cloud.define("requestToSomeone", function(request, response) {
+Parse.Cloud.define("requestToSomeone", function(request, response) {
     //当前用户id
     var fromUserId = request.params.userId;
     var toUserId = request.params.toUserId;
 
-	if(fromUserId=='' || toUserId=='' || fromUserId == null || toUserId==null) response.error("param is null when query guys InOneUmberCount.");
-    var Relationship = AV.Object.extend('Relationship');
-    query = new AV.Query(Relationship);
+    var Relationship = Parse.Object.extend('Relationship');
+    query = new Parse.Query(Relationship);
     query.equalTo("fromUser", fromUserId);
     query.equalTo("toUser", toUserId);
     query.equalTo("status", 1);
@@ -85,7 +52,6 @@ AV.Cloud.define("requestToSomeone", function(request, response) {
               }
             });
         }else{
-		  
           //or update
           result.set("isActive",true);
           result.save(null, {
@@ -107,18 +73,17 @@ AV.Cloud.define("requestToSomeone", function(request, response) {
 });
 
 
-// 取消一个请求  done  {"userId":"spring","toUserId":"girl"}
-AV.Cloud.define("cancelRequest", function(request, response) {
+// 取消一个请求  done
+Parse.Cloud.define("cancelRequest", function(request, response) {
     //当前用户id
     var fromUserId = request.params.userId;
     var toUserId = request.params.toUserId;
 
-	if(fromUserId=='' || toUserId=='' || fromUserId == null || toUserId==null) response.error("param is null when query cancelRequest.");
     // var fromUserId = "testone11";
     // var toUserId = "testtwo1";
 
-    var Relationship = AV.Object.extend("Relationship");
-    query = new AV.Query("Relationship");
+    var Relationship = Parse.Object.extend("Relationship");
+    query = new Parse.Query("Relationship");
 
     query.equalTo("fromUser",fromUserId);
     query.equalTo("toUser",toUserId);
@@ -129,12 +94,12 @@ AV.Cloud.define("cancelRequest", function(request, response) {
                  if (result) {
                     result.destroy({
                   success: function(result) {
-                    // The object was deleted from the AV Cloud.
+                    // The object was deleted from the Parse Cloud.
                     response.success("success");
                   },
                   error: function(result, error) {
                     // The delete failed.
-                    // error is a AV.Error with an error code and description.
+                    // error is a Parse.Error with an error code and description.
                     response.error(error);
                   }
                 });
@@ -142,7 +107,7 @@ AV.Cloud.define("cancelRequest", function(request, response) {
                response.success("success");
       },
       error: function(result, error) {
-        response.error('Failed to find object before destroy, with error code: ' + error.message);
+        alert('Failed to find object before destroy, with error code: ' + error.message);
       }
     });
 });
@@ -154,60 +119,30 @@ AV.Cloud.define("cancelRequest", function(request, response) {
 
 
 // 拒绝一个请求  done
-AV.Cloud.define("rejectRequest", function(request, response) {
+Parse.Cloud.define("rejectRequest", function(request, response) {
     //当前用户id
     var fromUserId = request.params.userId;
     var toUserId = request.params.toUserId;
-	if(fromUserId==='' || toUserId==='' || fromUserId === null || toUserId===null) response.error("param is null when rejectRequest.");
+
     // var fromUserId = "testone11";
     // var toUserId = "testtwo1";
-	
-	var Relationship = AV.Object.extend("Relationship");
-    query = new AV.Query("Relationship");
 
-    query.equalTo("fromUser",fromUserId);
-    query.equalTo("toUser",toUserId);
-    query.equalTo("status",1);
-    
-	query.first({
-    success: function(result) {
-        //already exist, do nothing;  
-        if(!result){
-            var Relationship = AV.Object.extend("Relationship");
-		    var relationship = new Relationship();
+    var Relationship = Parse.Object.extend("Relationship");
+    var relationship = new Relationship();
 
-		    relationship.set("fromUser",fromUserId);
-		    relationship.set("toUser",toUserId);
-		    relationship.set("isActive",false);
-		    relationship.set("status",2);
-             relationship.save(null, {
-              success: function(relationship) {
-                response.success("success");
+    relationship.set("fromUser",fromUserId);
+    relationship.set("toUser",toUserId);
+    relationship.set("isActive",false);
+    relationship.set("status",2);
+     relationship.save(null, {
+      success: function(relationship) {
+        response.success("success");
 
-              },
-              error: function(relationship, error) {
-                response.error("Error " + error.code + " : " + error.message + " when save.");
-              }
-            });
-        }else{
-		  
-          //or update
-          result.set("isActive",true);
-          result.save(null, {
-              success: function(result) {
-                response.success("success");
-
-              },
-              error: function(result, error) {
-                response.error("Error " + error.code + " : " + error.message + " when update.");
-              }
-            });
-        }
-    },
-    error: function(error) {
-      response.error("Error " + error.code + " : " + error.message + " when query guys InOneUmberCount.");
-    }
-  });
+      },
+      error: function(relationship, error) {
+        response.error("Error " + error.code + " : " + error.message + " when save.");
+      }
+    });
 
 });
 
@@ -216,7 +151,7 @@ AV.Cloud.define("rejectRequest", function(request, response) {
 
 // agree a request   
 // todo: implement again
-AV.Cloud.define("agreeRequest", function(request, response) {
+Parse.Cloud.define("agreeRequest", function(request, response) {
     //当前用户id
     var fromUserId = request.params.userId;
     var toUserId = request.params.toUserId;
@@ -224,7 +159,7 @@ AV.Cloud.define("agreeRequest", function(request, response) {
     // var fromUserId = "testone11";
     // var toUserId = "testtwo1";
 
-    var Relationship = AV.Object.extend("Relationship");
+    var Relationship = Parse.Object.extend("Relationship");
     var relationship = new Relationship();
 
     relationship.set("fromUser",fromUserId);
@@ -247,9 +182,9 @@ AV.Cloud.define("agreeRequest", function(request, response) {
 
 // find the ones who have umber  
 // todo: implement again
-AV.Cloud.define("queryUmberOnes", function(request, response) {
-  var User = AV.Object.extend('User');
-  query = new AV.Query(User);
+Parse.Cloud.define("queryUmberOnes", function(request, response) {
+  var User = Parse.Object.extend('User');
+  query = new Parse.Query(User);
   query.find({
     success: function(result) {
         response.success(result);
@@ -264,9 +199,9 @@ AV.Cloud.define("queryUmberOnes", function(request, response) {
 
 // find the ones who dont have umber 
 // todo: implement again
-AV.Cloud.define("queryNoUmberOnes", function(request, response) {
-  var User = AV.Object.extend('User');
-  query = new AV.Query(User);
+Parse.Cloud.define("queryNoUmberOnes", function(request, response) {
+  var User = Parse.Object.extend('User');
+  query = new Parse.Query(User);
   query.find({
     success: function(result) {
         response.success(result);
@@ -282,9 +217,9 @@ AV.Cloud.define("queryNoUmberOnes", function(request, response) {
 
 // find the ones who request yourself 
 // todo: implement again
-AV.Cloud.define("queryRequestToMeList", function(request, response) {
-  var User = AV.Object.extend('User');
-  query = new AV.Query(User);
+Parse.Cloud.define("queryRequestToMeList", function(request, response) {
+  var User = Parse.Object.extend('User');
+  query = new Parse.Query(User);
   query.find({
     success: function(result) {
         response.success(result);
@@ -299,29 +234,28 @@ AV.Cloud.define("queryRequestToMeList", function(request, response) {
 
 
 // find the ones who I sent request 
-// todo: implement again   {"userId":"spring","toUserId":"girl"}
-AV.Cloud.define("queryMyRequestList", function(request, response) {
- var fromUserId = request.params.userId;
- if(fromUserId==='' || fromUserId === null ) response.error("param is null when queryMyRequestList.");
- AV.Query.doCloudQuery('select * from _User where username = (select toUser from Relationship where fromUser=? and status=1 )',[fromUserId],
- {
-  success: function(result){
-     response.success(result);
-  },
-  error: function(error){
-    //查询失败，查看 error
-    console.dir(error);
-  }
-});
+// todo: implement again
+Parse.Cloud.define("queryMyRequestList", function(request, response) {
+  var User = Parse.Object.extend('User');
+  query = new Parse.Query(User);
+  query.find({
+    success: function(result) {
+        response.success(result);
+
+    },
+    error: function(error) {
+      response.error("Error " + error.code + " : " + error.message + " when query guys queryUmberOnes.");
+    }
+  });
 })
 
 
 
 // find the current ones who finish register
 // todo: implement again
-AV.Cloud.define("finishRegister", function(request, response) {
-  var User = AV.Object.extend('User');
-  query = new AV.Query(User);
+Parse.Cloud.define("finishRegister", function(request, response) {
+  var User = Parse.Object.extend('User');
+  query = new Parse.Query(User);
   query.first({
     success: function(result) {
         response.success(result);
@@ -336,9 +270,9 @@ AV.Cloud.define("finishRegister", function(request, response) {
 
 // find the current ones who finish login
 // todo: implement again
-AV.Cloud.define("finishlogin", function(request, response) {
-  var User = AV.Object.extend('User');
-  query = new AV.Query(User);
+Parse.Cloud.define("finishlogin", function(request, response) {
+  var User = Parse.Object.extend('User');
+  query = new Parse.Query(User);
   query.first({
     success: function(result) {
         response.success(result);
@@ -355,9 +289,9 @@ AV.Cloud.define("finishlogin", function(request, response) {
 
 // request some one's desc
 // todo: implement again
-AV.Cloud.define("queryDescForUserName", function(request, response) {
-  var User = AV.Object.extend('User');
-  query = new AV.Query(User);
+Parse.Cloud.define("queryDescForUserName", function(request, response) {
+  var User = Parse.Object.extend('User');
+  query = new Parse.Query(User);
   query.first({
     success: function(result) {
         response.success(result);
@@ -368,5 +302,3 @@ AV.Cloud.define("queryDescForUserName", function(request, response) {
     }
   });
 })
-Status API Training Shop Blog About
-© 2014 GitHub, Inc. Terms Privacy Security Contact
